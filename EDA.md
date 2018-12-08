@@ -15,6 +15,7 @@ notebook: EDA.ipynb
 import sys
 import numpy as np
 import pandas as pd
+import math
 import json
 import os
 import re
@@ -22,31 +23,207 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from collections import Counter
 from itertools import product
+import sqlite3
 ```
 
 
 ## I. Data Description
 
 **Million Playlist Dataset (MPD)** was created by sampling from the playlists created by Spotify users. It containsthat  information on 1,000,000 playlists (e.g. name, number of tracks, total duration...) and the songs included in those playlists (e.g. name, album, artist...).
-- Processed track, artist, and album IDs to get rid of unnecessary parts of the strings.
-- Loaded and stored data into two dataframes, one storing information on all the playlists, and one storing information on the set of songs included in the playlists.
 
 
 **Million Song Dataset (MSD)** was created by the Echo Nest API and some information from a local copy
 of the musicbrainz server. In particular, we used two complementary datasets: Last.fm and MusiXmatch. The former contains human labeled tags for the songs in million song dataset. The latter contains lyrics for the songs in million song dataset, represented as bag of words (BOW) that are stemmed by the Porter2 algorithm. The dictionary used for BOW consists of 5000 most frequent words in the lyrics.
-- Extracted tags from ‘Last.fm’ dataset and lyrics from the ‘musiXmatch’ dataset, and linked the two by ‘track_id’ to perform genre detection.
 
 
 **Lyrics Wiki** is a database of lyrics. There are ~2,000,000 pages each corresponding to a song, an artist, an album or a label. The lyrics of the songs are organized in 4 dimensions: artist, album, name and label, each in alphabetical order.
-- Scraped the title, artist and lyrics of all tracks from Lyrics Wiki.
+
 
 **Spotify Web API** returns metadata about music artists, albums, tracks directly from the Spotify data Catalogue. The information covered in the query result are similar to those covered by MSD with Spotify-specific additional information (e.g. followers for an artist, Spotify-derived audio features).
-- Scraped audio feature.
+
+## II. Data Preprocessing
+
+### 1. MPD
+
+- Processed track, artist, and album IDs to get rid of unnecessary parts of the strings.
+- Loaded and stored data into two dataframes, one storing information on all the playlists, and one storing information on the set of songs included in the playlists.
 
 
-## II. EDA
 
-### Basic Information on Playlists
+```python
+## set up file paths
+data_path = os.path.join(os.getcwd(),'millionplaylist','data')
+playlist_fn = os.listdir(data_path)
+
+## declare items that we are interested in 
+pl_items_nodescription = ['name','collaborative','pid','modified_at','num_tracks',
+         'num_albums','num_followers','num_edits','duration_ms','num_artists']
+song_items = ['artist_name','track_name','duration_ms','album_name']
+pl_df = pd.DataFrame(columns=['pid','collaborative','duration_ms',
+                              'modified_at','name','num_albums',
+                              'num_artists','num_edits','num_followers',
+                              'num_tracks','description']) # Playlist Data
+song_df = pd.DataFrame(columns=['pid','track_name','track_uri',
+                                'artist_name','artist_uri',
+                                'album_name','album_uri','duration_ms'])# Song Data
+
+## run through the files
+for fn in playlist_fn:
+    with open(data_path+fn) as f:
+        data = json.load(f)
+
+    playlists = data['playlists']
+    for playlist in playlists:
+        # Playlist Data: pl_df
+        try:
+            pl_df = pl_df.append({item:playlist[item] for item in pl_df.columns}, 
+                                 ignore_index=True)
+        except KeyError: 
+            pl_df = pl_df.append({item:playlist[item] for item in pl_items_nodescription}, 
+                                 ignore_index=True)
+        # Song Data: song_df
+        pid = playlist['pid']
+        for song in playlist['tracks']:            
+            track_name = song['track_name']
+            track_uri = song['track_uri'].split(':')[2]
+            artist_name = song['artist_name']
+            artist_uri = song['artist_uri'].split(':')[2]
+            album_name = song['album_name']
+            album_uri = song['album_uri'].split(':')[2]
+            duration_ms = song['duration_ms']
+            song_df = song_df.append({''}, 
+                                 ignore_index=True)
+
+## save data to csv
+pl_df.to_csv('pl_df.csv')
+song_df.to_csv('song_df.csv')
+```
+
+
+### 2. MSD
+
+#### (1). Audio Features and Genres
+
+- Extracted top genre related tags from 'Last.fm' dataset and audio features from the raw MSD dataset, and linked the two by 'track_id'.
+- Saved the resulting dataframe into 'audio_tag.csv'
+
+
+
+
+
+```python
+genre_of_interest = ['rock','pop','alternative','indie','electronic',
+                    'jazz','metal','soul','folk','instrumental',
+                     'punk','blues','Hip-Hop']
+feature_of_interest = ['danceability','energy','key','loudness','mode','tempo']
+
+## connect to sql database
+TAG_PATH  = 'lastfm_tags.db'
+conn_tag  = sqlite3.connect(TAG_PATH)
+
+## data query
+sql  = """SELECT tids.tid, tags.tag, tid_tag.val FROM tid_tag, tids, tags 
+          WHERE tids.ROWID=tid_tag.tid AND tid_tag.tag=tags.ROWID 
+          AND tags.tag in ('rock','pop','alternative','indie','electronic',
+          'jazz','metal','soul','folk','instrumental','punk','blues','Hip-Hop')
+          ORDER BY tids.tid"""
+tag_data = np.array(conn_tag.execute(sql).fetchall())
+
+## construct empty dictionary
+data_dict = {track_id:{} for track_id in tag_data[:,0]}
+for track_id, item in itertools.product(tag_data[:,0], feature_of_interest+genre_of_interest):
+    data_dict[track_id][item] = 0
+    
+## fill dictionary with tag values
+for entry in tag_data:
+    data_dict[entry[0]][entry[1]]=float(entry[2])
+    
+## get file paths for songs of interest
+song_data_path = os.path.join(os.getcwd(),'millionsong','data')
+sub = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N',
+        'O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
+song_fn = {}
+for sub1, sub2, sub3 in itertools.product(sub,sub,sub):
+    song_path = os.path.join(song_data_path,sub1,sub2,sub3)
+    try:
+        for fn in os.listdir(song_path):
+            if fn.split('.')[0] in data_dict:
+                song_fn[fn.split('.')[0]] = os.path.join(song_path, fn)
+    except FileNotFoundError: pass
+    
+## read audio feature data into the dictionary
+for fn in song_fn:
+    s = h5py.File(song_fn[fn], 'r')
+    analysis = np.array(s.get('analysis').get('songs'))[0]
+    for feature in feature_of_interest:
+        data_dict[fn][feature] = analysis[feature]
+
+## turn dictionary into dataframe and drop unfound rows
+data_df = pd.DataFrame.from_dict(data_dict,orient='index')
+set1 = set(data_dict.keys())
+set2 = set(song_fn.keys())
+drop_index = list(set1 - set2)
+data_df = data_df.drop(drop_index, axis=0)
+data_df = data_df.drop(['danceability','energy'], axis=1)
+
+## save data to csv
+data_df.to_csv('audio_tag.csv')
+```
+
+
+#### (2). Lyrics and Emotions
+
+- Extracted top emotion related tags from 'Last.fm' dataset and lyrics from the 'musiXmatch' dataset, and linked the two by 'track_id'.
+
+### 3. Lyrics Wiki
+
+- Scraped the title, artist and lyrics of all tracks from Lyrics Wiki.
+
+### 4. Spotify Web API
+
+- Used spotipy module to pull audio feature for all songs included in the MPD dataset.
+
+
+
+```python
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
+## get the list of track uris we are interested in
+song_df = pd.read_csv('song_df.csv')
+uri_full = song_df.iloc[:,0].values
+audio_dict_full = {uri:{} for uri in uri_full}
+
+## set up authorization token for Spotify API
+token = SpotifyClientCredentials(client_id='c792735e0b274108b1bb6462c1428f4f',
+                                 client_secret='65fb408b80e1467a93c3f8b45ab3ebae')
+sp = spotipy.Spotify(client_credentials_manager = token)
+
+## run through the track uris to collect audio features
+for k in range(0,math.floor(len(uri_full)/50)):
+    print(k)
+    uris = ["spotify:track:"+uri_full[i] for i in range(50*k, min(50*(k+1),len(uri_full)))]
+    extracted = sp.audio_features(uris)
+    for i in range(50):
+        try:
+            for item in ['danceability','energy','key','loudness','mode',
+                        'speechiness','acousticness','instrumentalness',
+                         'liveness','valence','tempo']:
+                audio_dict_full[uri_full[50*k+i]][item] = extracted[i][item]
+        except TypeError:
+            pass
+
+## save data to csv
+MPD_audio_full = pd.DataFrame.from_dict(audio_dict_full,orient='index')
+MPD_audio_full.insert(0,'track_uri',MPD_audio_full.index)
+MPD_audio_full.to_csv('MPD_audio_full.csv',index=False)
+```
+
+
+## III. EDA
+
+### 1. Basic Information on Playlists
 
 
 
@@ -112,7 +289,7 @@ ax.legend(fontsize=22);
 
 
 
-![png](EDA_files/EDA_9_0.png)
+![png](EDA_files/EDA_18_0.png)
 
 
 #### Number of Artists in each Playlist
@@ -138,7 +315,7 @@ ax.legend(fontsize=22);
 
 
 
-![png](EDA_files/EDA_11_0.png)
+![png](EDA_files/EDA_20_0.png)
 
 
 #### Number of Albums in each Playlist
@@ -164,7 +341,7 @@ ax.legend(fontsize=22);
 
 
 
-![png](EDA_files/EDA_13_0.png)
+![png](EDA_files/EDA_22_0.png)
 
 
 #### Popular Playlist Names
@@ -189,7 +366,7 @@ ax.invert_yaxis();
 
 
 
-![png](EDA_files/EDA_15_0.png)
+![png](EDA_files/EDA_24_0.png)
 
 
 #### Popular Playlist Descriptions
@@ -214,14 +391,14 @@ ax.invert_yaxis();
 
 
 
-![png](EDA_files/EDA_17_0.png)
+![png](EDA_files/EDA_26_0.png)
 
 
 We found that the numbers of songs, albums, and artisits in playlists are all right skewed, which is expected. These insights give us a better idea in terms of how many songs to recommend, and how diverse a common playlist is.
 
 Moreover, we found that playlist names are more complete and informative than playlist descriptions. Therefore, when we try to combine playlists, we will use playlist names as the criterion.
 
-### Number of Songs under each Playlist Name
+### 2. Number of Songs under each Playlist Name
 
 
 
@@ -295,12 +472,12 @@ ax.tick_params(labelsize=20);
 
 
 
-![png](EDA_files/EDA_23_0.png)
+![png](EDA_files/EDA_32_0.png)
 
 
 We observe that when the number of playlists under the same name is small, there is a positive linear relationship between the number of songs and the number of playlists. However, as the number of playlists grows, except ‘chill’, most playlist names do not have more than 80,000 songs under them. This is to say, a lot of songs are repeated in multiple playlists with the same theme. This allows us to have a richer scoring record if we were to treat each playlist name as a user with a distinct taste, and the number of occurrences of each song to represent the degree of preference.
 
-### Popular Tags in Last.fm
+### 3. Popular Tags in Last.fm
 
 
 
@@ -708,12 +885,12 @@ ax.legend(fontsize=20,loc='center right');
 
 
 
-![png](EDA_files/EDA_28_0.png)
+![png](EDA_files/EDA_37_0.png)
 
 
 We see that more than half of the tags indicate either the genre, emotion, or decade of the songs. Intuitively, the decade is hard to predict. Therefore, we will focus on using lyrics to identify emotion, and using sound feature to identify genre in our music recommendation model.
 
-### Linking MPD and MSD
+### 4. Linking MPD and MSD
 
 
 
@@ -786,10 +963,3 @@ print('# Overlapped <artist - song name> pair in MPD and MSD: ',contained)
 
 
 From previous EDA, we learned that there are around 1,000,000 songs in MSD and around 2,200,000 songs in MPD. However, if we consider the 'artist - song name' pair as an indication of a distinct song, each dataset contains over 70,000 repeated songs, and there are only 144,300 songs repeated in both datasets. We need to find better ways to link the two datasets and build a comprehensive MRS.
-
-
-
-```python
-
-```
-
