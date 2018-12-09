@@ -92,7 +92,7 @@ print('Time Used: ', t)
 
 
 ```python
-## Case 2.1 2-D Variables with rAD
+## Case 2.2 2-D Variables with rAD
 t0 = clock()
 x1,x2,x3,x4 = AutoDiff.create_r([[np.pi/2,0],[1,2],[3,4],[1,2]])
 f = AutoDiff.sin(x1) + x2*x3 + x4**4
@@ -202,46 +202,6 @@ print('Time Used: ', t)
     Number of Steps Used:  2000
     ---------------------------------
     Time Used:  1.4958799999999997
-
-
-
-
-```python
-## Case 4.1 Steepest Descent with fAD
-from scipy.optimize import line_search
-t0 = clock()
-
-def R(X): 
-    return 100*(X[1]-X[0]**2)**2 + (1-X[0])**2
-
-def G(X):
-    #AutoDiff.stack_r
-    x,y = AutoDiff.create_f([X[0],X[1]])
-    f = R([x,y])
-    return f.get_jac()
-
-x,y = 0,1
-dX = [1,1] # to ensure that norm(dX) >= 1e-8
-step_count = 0
-while np.linalg.norm(dX) >= 1e-8 and step_count < 2000:
-    step_count += 1
-    s = -G([x,y])
-    eta = line_search(R, G, [x,y], s)[0]
-    dX = eta*s
-    x,y = [x,y]+dX
-    
-t = clock() - t0
-print('Optimized solution: ',[x,y])
-print('Number of Steps Used: ',step_count)
-print('---------------------------------')
-print('Time Used: ', t)
-```
-
-
-    Optimized solution:  [0.9999995671204049, 0.9999991324744798]
-    Number of Steps Used:  1571
-    ---------------------------------
-    Time Used:  1.2479030000000009
 
 
 
