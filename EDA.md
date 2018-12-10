@@ -1,5 +1,5 @@
 ---
-title: Data Description and EDA
+title: Get the BOW representation for tracks labelled with 'happy' and 'sad'.
 notebook: EDA.ipynb
 nav_include: 1
 ---
@@ -177,9 +177,177 @@ data_df.to_csv('audio_tag.csv')
 
 - Extracted top emotion related tags from 'Last.fm' dataset and lyrics from the 'musiXmatch' dataset, and linked the two by 'track_id'.
 
+
+
+```python
+"""Get the list of 5000 words used for musiXmatch's BOW representation"""
+def get_mxm_vocab(conn_mxm):
+    sql  = "SELECT * FROM words"
+    res  = conn_mxm.execute(sql)
+    data = res.fetchall()
+    mxm_vocab = [t[0] for t in data]
+    return mxm_vocab
+```
+
+
+
+
+```python
+mxm_vocab = get_mxm_vocab(conn_mxm)
+mxm_dict  = {mxm_vocab[i] : i for i in range(len(mxm_vocab))}
+```
+
+
+
+
+```python
+"""Get the BOW regresentation of the tracks in the form of a sparse matrix"""
+def get_bagofwords(tids, mxm_dict, conn_mxm):
+    bows = []
+    for tid in tids:
+        sql  = "SELECT word, count FROM lyrics WHERE track_id='{}'".format(tid)
+        res  = conn_mxm.execute(sql)
+        data = res.fetchall()
+        col  = np.array([mxm_dict[t[0]] for t in data], dtype=np.int16)
+        row  = np.zeros(len(col),                       dtype=np.int16)
+        cnt  = np.array([t[1] for t in data] )
+        bow  = csr_matrix((cnt, (row, col)), shape=(1, 5000))
+        bows.append(bow)
+    return vstack(bows)
+```
+
+
+
+
+```python
+"""Get the track ids. tagged with a certain tag"""
+def get_tids_oftag(tag, conn_tag):
+    sql  = """SELECT tids.tid FROM tid_tag, tids, tags 
+              WHERE tids.ROWID=tid_tag.tid AND tid_tag.tag=tags.ROWID 
+              AND tags.tag='{}'""".format(tag)
+    res  = conn_tag.execute(sql)
+    data = res.fetchall()
+    return [t[0] for t in data]
+```
+
+
+
+
+```python
+happy_tids = get_tids_oftag('happy', conn_tag)
+happy_bows = get_bagofwords(happy_tids, mxm_dict, conn_mxm)
+sad_tids   = get_tids_oftag('sad',   conn_tag)
+sad_bows   = get_bagofwords(sad_tids, mxm_dict,   conn_mxm)
+```
+
+
 ### 3. Lyrics Wiki
 
 - Scraped the title, artist and lyrics of all tracks from Lyrics Wiki.
+
+
+
+```python
+from bs4 import BeautifulSoup
+import requests as rq
+import re
+import json
+```
+
+
+
+
+```python
+LYRICS_WIKI_ROOT_URL = 'http://lyrics.wikia.com'
+```
+
+
+
+
+```python
+def scrape_one_page(one_url, alphabet, n, skip=False):
+    
+    one_page = rq.get(one_url)
+    one_html = one_page.content
+    one_soup = BeautifulSoup(one_html, 'html.parser')
+    suburls = [li.find('a')['href'] 
+               for li in one_soup.find_all('li', {'class': 'category-page__member'})]
+    next_url = one_soup.find('a', {'class': \
+               'category-page__pagination-next wds-button wds-is-secondary'})['href']
+    if skip:
+        return next_url
+    
+    
+    lyric_data = []
+    for song_suburl in suburls:
+        try:
+            song_title = one_soup.find('a', {'href': song_suburl})['title']
+        except KeyError:
+            continue
+        song_url   = LYRICS_WIKI_ROOT_URL + song_suburl
+        song_page  = rq.get(song_url)
+        song_html  = song_page.content
+        song_soup  = BeautifulSoup(song_html, 'html.parser')
+        
+        lyrics = song_soup.find('div', {'class': 'lyricbox'})
+        lyric_lines = []
+        try:
+            for line in lyrics.contents:
+                if isinstance(line, str): lyric_lines.append(line)
+        except AttributeError:
+            continue
+        lyric_asstr = str.join('\n', lyric_lines).strip()
+        lyric_data.append({'title': song_title, 'lyrics': lyric_asstr})
+    
+    json_fn = alphabet+'_page_'+str(n)
+    with open(json_fn+'.json', 'w') as f:
+        f.write(json.dumps(lyric_data))
+    
+    return next_url
+```
+
+
+
+
+```python
+def scrape_alphabet(alphabet, n_start=1, n_end=1000):
+    main_page = rq.get(LYRICS_WIKI_ROOT_URL)
+    main_html = main_page.content
+    main_soup = BeautifulSoup(main_html, 'html.parser')
+    alphabet_suburl = [a['href'] for a in 
+                      main_soup.find_all('a', {'title': re.compile(r'Category:Songs.*')})]
+    
+    first_url = LYRICS_WIKI_ROOT_URL+alphabet_suburl[ord(alphabet)-ord('A')]
+    next_url  = first_url
+    for n in range(1, n_end+1):
+        print(next_url, 'n={}'.format(n))
+        if n < n_start:
+            next_url = scrape_one_page(next_url, alphabet, n, skip=True)
+        else:
+            next_url = scrape_one_page(next_url, alphabet, n)
+```
+
+
+
+
+```python
+def show_lyrics(alphabet, page, order):
+    with open(alphabet + '_page_' + str(page) + '.json', 'r') as f:
+        songlist = json.loads(f.read())
+    print('Title: {}'.format(songlist[order-1]['title'].split(':')[1]))
+    print('Artist: {}'.format(songlist[order-1]['title'].split(':')[0]))
+    print('------------------------------------------')
+    print('Lyrics:')
+    print(songlist[order-1]['lyrics'])
+```
+
+
+
+
+```python
+scrape_alphabet('Q')
+```
+
 
 ### 4. Spotify Web API
 
@@ -290,7 +458,7 @@ ax.legend(fontsize=22);
 
 
 
-![png](EDA_files/EDA_18_0.png)
+![png](EDA_files/EDA_29_0.png)
 
 
 #### Number of Artists in each Playlist
@@ -316,7 +484,7 @@ ax.legend(fontsize=22);
 
 
 
-![png](EDA_files/EDA_20_0.png)
+![png](EDA_files/EDA_31_0.png)
 
 
 #### Number of Albums in each Playlist
@@ -342,7 +510,7 @@ ax.legend(fontsize=22);
 
 
 
-![png](EDA_files/EDA_22_0.png)
+![png](EDA_files/EDA_33_0.png)
 
 
 #### Popular Playlist Names
@@ -367,7 +535,7 @@ ax.invert_yaxis();
 
 
 
-![png](EDA_files/EDA_24_0.png)
+![png](EDA_files/EDA_35_0.png)
 
 
 #### Popular Playlist Descriptions
@@ -392,7 +560,7 @@ ax.invert_yaxis();
 
 
 
-![png](EDA_files/EDA_26_0.png)
+![png](EDA_files/EDA_37_0.png)
 
 
 We found that the numbers of songs, albums, and artisits in playlists are all right skewed, which is expected. These insights give us a better idea in terms of how many songs to recommend, and how diverse a common playlist is.
@@ -473,7 +641,7 @@ ax.tick_params(labelsize=20);
 
 
 
-![png](EDA_files/EDA_32_0.png)
+![png](EDA_files/EDA_43_0.png)
 
 
 We observe that when the number of playlists under the same name is small, there is a positive linear relationship between the number of songs and the number of playlists. However, as the number of playlists grows, except ‘chill’, most playlist names do not have more than 80,000 songs under them. This is to say, a lot of songs are repeated in multiple playlists with the same theme. This allows us to have a richer scoring record if we were to treat each playlist name as a user with a distinct taste, and the number of occurrences of each song to represent the degree of preference.
@@ -886,7 +1054,7 @@ ax.legend(fontsize=20,loc='center right');
 
 
 
-![png](EDA_files/EDA_37_0.png)
+![png](EDA_files/EDA_48_0.png)
 
 
 We see that more than half of the tags indicate either the genre, emotion, or decade of the songs. Intuitively, the decade is hard to predict. Therefore, we will focus on using lyrics to identify emotion, and using sound feature to identify genre in our music recommendation model.
