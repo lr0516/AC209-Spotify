@@ -1,5 +1,5 @@
 ---
-title: Collaborative Filtering Models
+title: Output the results into a json file
 notebook: CollaborativeFiltering.ipynb
 nav_include: 2
 ---
@@ -12,8 +12,7 @@ nav_include: 2
 
 It is intuitive that people who listen to the same songs have similar tastes in music, and this is the basic assumption of collaborative filtering. Interactions between a bunch of users and a bunch of items can be represented by a utility matrix with a lot of blanks (since some of the interactions are absent). Collaborative filtering techniques fill in the blanks of the utility matrix by giving predictions based on existing interactions. We build up the collaborative filtering models based on Million Playlist Dataset, assuming that users with similar past behaviors are likely to listen to the same songs in the future.
 
-To build up the collborative filtering models, we use matrix factorization technique. The idea behind matrix factorization technique is that users actually respond to some very specific features of items and these features could be captured by decomposing the $n*m$ utility matrix into two matrices whose dimensions are $n*d$ and $d*m$. (Here d is the number of features characterized by the specific decomposition.) When people listen to music, they may be attracted by some very specific characteristics such as artist, genre and emotions passed by the music. So matrix factorization technique is suitable for music recommendation system.
-
+To build up the collborative filtering models, we use matrix factorization technique. The idea behind matrix factorization technique is that users actually respond to some very specific features of items and these features could be captured by decomposing the $n\*m$ utility matrix into two matrices whose dimensions are $n\*d$ and $$d\*m$$. (Here d is the number of features characterized by the specific decomposition.) When people listen to music, they may be attracted by some very specific characteristics such as artist, genre and emotions passed by the music. So matrix factorization technique is suitable for music recommendation system.
 
 We use the [Spotlight library](https://maciejkula.github.io/spotlight/index.html) which is based on PyTorch to build up matrix factorization models to get prediction utility matrix for all the users on all the items included in the training data set. We use the implicit feedback models as users do not give explicit ratings for the songs in the playlists. Only presence and absence of events can be captured from the Million Playlist Dataset.
 
@@ -27,7 +26,7 @@ We have three collaborative filtering models which are:
 
 ## I. Baseline Model
 
-We build up the baseline model by simply feeding original (playlist, song) pairs from 50,000 playlists to the Implicit Feedback Factorization model. Five percents of the MDP dataset are used to train the model, which include 50,000 playlists, 450,000 songs and 3,320,000 (playlist, song) pairs. 
+We build up the baseline model by simply feeding original (playlist, song) pairs from 50,000 playlists to the Implicit Feedback Factorization model. 5% playlists from the original MDP dataset are used to train the model, which include 50,000 playlists, 450,000 songs and 3,320,000 (playlist, song) pairs. 
 
 
 
