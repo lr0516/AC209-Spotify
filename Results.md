@@ -30,19 +30,19 @@ We will evaluate our models based on R-Precision, Normalized Discoutned Cumulati
 ### 1. R-Precision
 
 R-Precision measures the overlap between the ground truth set and our recommendation. Its value is simply the number of relavent songs in our model's  first $\mid G \mid$ recommendations divided by the length of the ground truth set.
-$$ \text{R-Precision} = \frac{\sum_{1}^{\mid G \mid} r_i}{\mid G \mid}$$
+<center>$$ \text{R-Precision} = \frac{\sum_{1}^{\mid G \mid} r_i}{\mid G \mid}$$</center>
 
 ### 2. NDCG
 
 Normalized Discoutned Cumulative Gain (NDCG) further measures the quality of order in our recommendation. It gives more credit when a relavent song is placed higher in our recommendation. DCG is a score on our recommendation, and IDCG is the ideal DCG value is all of our top $\mid G \mid$ recommended songs are relavent. By dividing the two, NDCG gives us a normalized score.
-$$ \text{DCG} = r_1 + \sum_{2}^{\mid R \mid} \frac{r_i}{log_2(i+1)}$$
-$$ \text{IDCG} = 1 + \sum_{2}^{\mid G \mid} \frac{1}{log_2(i+1)}$$
-$$ \text{NDCG} = \frac{\text{DCG}}{\text{IDCG}}$$
+<center>$$ \text{DCG} = r_1 + \sum_{2}^{\mid R \mid} \frac{r_i}{log_2(i+1)}$$</center>
+<center>$$ \text{IDCG} = 1 + \sum_{2}^{\mid G \mid} \frac{1}{log_2(i+1)}$$</center>
+<center>$$ \text{NDCG} = \frac{\text{DCG}}{\text{IDCG}}$$</center>
 
 ### 3. Recommended Songs Clicks 
 
 Recommended Songs Clicks is a special metric targeted for Spotify. Spotify has a feature that generates ten songs in a round. The Recommended Songs Clicks is the minimal number of refreshes required to get the first relavent song. 
-$$ \text{Clicks} = \left \lfloor \frac{argmin_i\{R_i:R_i \subset G\}}{10} \right \rfloor +1$$
+<center>$$ \text{Clicks} = \left \lfloor \frac{argmin_i\{R_i:R_i \subset G\}}{10} \right \rfloor +1$$</center>
 When there are more songs in R than in G, we only consider the first $\mid G \mid$ songs in R. If none of the recommended songs is relavent, the value of the Recommended Songs Clicks would be $1 + \frac{|R|}{10}$, which is one more than the maximal number of rounds possible.
 
 
