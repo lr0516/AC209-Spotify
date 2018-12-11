@@ -50,20 +50,20 @@ When there are more songs in R than in G, we only consider the first $\mid G \mi
 ```python
 def R_precision(rec, Y):
     count = 0
-    for song in rec:
-        if song in Y[:len(rec)]:
+    for song in Y:
+        if song in rec[:len(Y)]:
             count += 1 
-    return count/len(rec)
+    return count/len(Y)
 
 def NDCG(rec, Y):
     IDCG = 0
-    for i in range(0,len(rec)):
+    for i in range(0,len(Y)):
         if i == 0: IDCG += 1
         else: IDCG += 1/math.log((i+2),2)
     DCG = 0
-    for i in range(0,len(Y)):
-        if i == 0 and Y[i] in rec: DCG += 1
-        elif i > 0 and Y[i] in rec: DCG += 1/math.log((i+2),2)     
+    for i in range(0,len(rec)):
+        if i == 0 and rec[i] in Y: DCG += 1
+        elif i > 0 and rec[i] in Y: DCG += 1/math.log((i+2),2)     
     return DCG/IDCG
 
 def clicks(rec, Y):
