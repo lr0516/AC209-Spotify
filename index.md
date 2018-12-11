@@ -38,3 +38,6 @@ We will recommend solely based on the collaborative filtering model, assigning e
 
 
 ### Literature Review
+
+### References
+- https://recsys-challenge.spotify.com/rules
