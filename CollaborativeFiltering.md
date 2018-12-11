@@ -27,7 +27,7 @@ We have three collaborative filtering models which are:
 
 ## I. Baseline Model
 
-We build up the baseline model by simply feeding original (playlist, song) pairs from 50,000 playlists to the Implicit Feedback Factorization model. 5% playlists from the original MDP dataset are used to train the model, which include 50,000 playlists, 450,000 songs and 3,320,000 (playlist, song) pairs. 
+We build up the baseline model by simply feeding original (playlist, song) pairs from 50,000 playlists to the Implicit Feedback Factorization model. Five percents of the MDP dataset are used to train the model, which include 50,000 playlists, 450,000 songs and 3,320,000 (playlist, song) pairs. 
 
 
 
