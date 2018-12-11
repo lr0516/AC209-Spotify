@@ -1,5 +1,5 @@
 ---
-title: build index to accelerate querying
+title: Content-Based Models
 notebook: ContentBased.ipynb
 nav_include: 3
 ---

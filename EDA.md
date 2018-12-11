@@ -1,5 +1,5 @@
 ---
-title: Data Description and EDA
+title: Data and EDA
 notebook: EDA.ipynb
 nav_include: 1
 ---
