@@ -1,7 +1,6 @@
 ---
 title: Results
 notebook: Results.ipynb
-nav_include: 5
 ---
 
 ## Contents
@@ -91,6 +90,55 @@ def TEST_ALL(recs, Ys):
 ```
 
 
+
+
+```python
+def test_recs(fn):
+    with open(fn) as json_file: 
+         rec = json.load(json_file)
+    with open('validation/val_Y.json') as json_file: 
+         val_Y = json.load(json_file)  
+
+    empty = []
+    for i in range(len(rec)):
+        if len(rec[i])==0: empty.append(i)
+    for i in reversed(sorted(empty)): 
+        del rec[i]
+        del val_Y[i]
+
+    R_precision_score, NDCG_score, clicks_score = TEST_ALL(rec,val_Y)
+    
+    print(f'#empty rec: {len(empty)}')
+    print()
+    print(f'R_precision: {np.mean(R_precision_score)}')
+    print(f'NDCG: {np.mean(NDCG_score)}')
+    print(f'#clicks: {np.mean(clicks_score)}')
+    
+    
+def test_scores(fn):
+    with open(fn) as json_file: 
+         scores = json.load(json_file)
+    with open('validation/val_Y.json') as json_file: 
+         val_Y = json.load(json_file)  
+    rec = [list(single_score.keys()) for single_score in scores]
+
+    empty = []
+    for i in range(len(rec)):
+        if len(rec[i])==0: empty.append(i)     
+    for i in reversed(sorted(empty)): 
+        del rec[i]
+        del val_Y[i]
+
+    R_precision_score, NDCG_score, clicks_score = TEST_ALL(rec,val_Y)
+
+    print(f'#empty rec: {len(empty)}')
+    print()
+    print(f'R_precision: {np.mean(R_precision_score)}')
+    print(f'NDCG: {np.mean(NDCG_score)}')
+    print(f'#clicks: {np.mean(clicks_score)}')
+```
+
+
 ## II. Model Evaluation
 
 During the hybridization process, we have chosen 5,000 playlists and divided them into input and output parts. The inputs have lengths from 0 to 150, distributed roughly evenly, and the outputs all have lengths of 100. We feed our models with the validation input, and each model produces 500 ordered song recommendations. We then calculate the three metrics for each of the models.
@@ -98,6 +146,20 @@ During the hybridization process, we have chosen 5,000 playlists and divided the
 Because we generated our validation set from MPD, and MPD does not provide information on a user's preference among the songs within a single playlist, we make the assumption that the position of a song indicates the user's preference. That is to say, we consider that users prefer songs that are placed in the front of the playlists, and we calculate NDCG based on this assumption. 
 
 ### 1. Baseline Model
+
+
+
+```python
+test_scores('stacking/score_500_full.json')
+```
+
+
+    #empty rec: 0
+    
+    R_precision: 0.017968
+    NDCG: 0.053416332195018505
+    #clicks: 6.2572
+
 
 ### 2. Single Models
 
