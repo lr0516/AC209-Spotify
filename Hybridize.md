@@ -1,5 +1,5 @@
 ---
-title: Hybrid Model
+title: Hybrid Models
 notebook: Hybridize.ipynb
 nav_include: 4
 ---
