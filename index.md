@@ -14,7 +14,7 @@ There are many leading music streaming services in the market, including Spotify
 In the early stage, we read a wide range of papers on recommendation systems, which introduce to us the popular approaches in this field, including Collaborative Filtering. More detail will be discussed in the later 'Literature Review' section. Moreover, our EDA results lead us to utilize playlist names, song emotions, and song genres in our model.
 
 - **Goal**: ​Our goal is to build a robust MRS to recommend songs to the users given a set of songs the users have been listened to.
-- **Approach**: W​e would like to hybridize two models: 1) Collaborative filtering, recommending songs based on similar users’ past preferences; 2) Content-based recommendation, using NLP techniques on song titles and lyrics to detect mood, and analyzing sound features to detect genre.
+- **Approach**: W​e would like to hybridize two models: 1) Collaborative filtering, recommending songs based on similar users’ past preferences; 2) Content-based recommendation, using NLP techniques on song titles and lyrics to detect mood, and analyzing sound features to detect genre. We combine the models into one hybrid model through stacking with Logistic Regression and computing weighted sums.
 
 
 ### Related Work
