@@ -37,7 +37,30 @@ A general challenge in the recommender system is called Cold Start Problem. In o
 We will recommend solely based on the collaborative filtering model, assigning equal weight to all the users in the model.
 
 
-### Literature Review
+### Related Work
+Here are some related works that guide us to design and implement our project. We would like to give special thanks to them. 
+
+
+[1] Kim, Y.E., Schmidt, E.M., Migneco, R., Morton, B.G., Richardson, P., Scott, J., Speck, J.A. and Turnbull, D., 2010, August. Music emotion recognition: A state of the art review. In Proc. ISMIR (pp. 255-266).
+
+"Recognizing musical mood remains a challenging problem primarily due to the inherent ambiguities of human emotions." In this paper, we learn that recognizing musical mood is a multiclass-multilabel classification or regression problem, where we try to annotate each music piece with a set of emotions. We can represent moods as multi-dimensional vector. In addition, we can directly use the existing music database, which has been manually annotated, to train our model.
+
+[2] “Effection.” Effection, https://xindizhao19931.wixsite.com/spotify2. 
+
+We want to associate song lyrics with musical mood and theme. Namely, we want to classify a song's mood based on its lyrics. This website teaches us to use both unsupervised method, Word2Vec, and supervised method, Long Short-Term Memory (LSTM), for language processing, sentiment analysis and predictive modeling. 
+
+[3] Leskovec, J., Rajaraman, A. and Ullman, J.D., 2014. Mining of massive datasets. Cambridge university press.
+
+In Chapter 9 Section 2, we learn to construct for each item a profile, which is a record or collection of records representing important characteristics of that item. Each profile can be viewed as a vector, whose entries are paired with a set of features. We also need to create vectors with the same components that describe the user’s preferences. Then we can just calculate the cosine distance between two sets to measure the similarity of two playlists.
+
+[4] Logan, B., Kositsky, A. and Moreno, P., 2004, June. Semantic analysis of song lyrics. In Multimedia and Expo, 2004. ICME'04. 2004 IEEE International Conference on (Vol. 2, pp. 827-830). IEEE.
+
+This paper shows us that we can use latent semantic analysis to compare the similarities among lyrics. However, as the paper points out, "similarity based on lyrics was found to be better than random but inferior to acoustic similarity, at least for the ground truth used." 
+
+[5] Yang, H., Jeong, Y., Choi, M. and Lee, J., 2018, October. MMCF: Multimodal Collaborative Filtering for Automatic Playlist Continuation. In Proceedings of the ACM Recommender Systems Challenge 2018 (p. 11). ACM.
+
+From this paper, we learn how to prepare our training dataset more appropriately. We would like to filter out songs that are not so popular, and therefore appear in only one or two playlists.
+
 
 ### References
 - https://recsys-challenge.spotify.com/rules
