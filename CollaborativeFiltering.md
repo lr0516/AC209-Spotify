@@ -19,14 +19,14 @@ We use the [Spotlight library](https://maciejkula.github.io/spotlight/index.html
 Now that utility matrix is determined, for each user in the test dataset, we predict his/her ratings on the tracks by calculating the weighted sum of training dataset users’ ratings on the tracks. The weight of users in the training dataset is defined by cosine similarity between users in the training dataset and the specific tested user.
 
 We have three collaborative filtering models which are:
-    - Baseline Model
+    - Baseline Model for Collaborative Filtering
     - Filtered-Data Model
     - Meta-Playlist Model
  These three models differ the most in their training datasets.
 
-## I. Baseline Model
+## I. Baseline Model for Collaborative Filtering
 
-We build up the baseline model by simply feeding original (playlist, song) pairs from 50,000 playlists to the Implicit Feedback Factorization model. 5% playlists from the original MDP dataset are used to train the model, which include 50,000 playlists, 450,000 songs and 3,320,000 (playlist, song) pairs. 
+We build up the baseline model for Collaborative Filtering by simply feeding original (playlist, song) pairs from 50,000 playlists to the Implicit Feedback Factorization model. 5% playlists from the original MDP dataset are used to train the model, which include 50,000 playlists, 450,000 songs and 3,320,000 (playlist, song) pairs. 
 
 
 
@@ -177,7 +177,7 @@ with open('Recommend_songs_baseline_CFmodel.json', 'w') as f:
 ```
 
 
-A weakness of the baseline model is that some of the songs in the training datasets are included in only one playlist and some of the playlists in the training datasets are too short to describe the similarities between songs. Another problem is that since it takes too long to train the Implicit Feedback Factorization models, only 5% of the MDP data were used. To overcome these problems, we further build up Filtered-Data Model and Meta-Playlist Model by training the Implicit Feedback Factorization model on processed data.
+A weakness of this baseline model for Collaborative Filtering is that some of the songs in the training datasets are included in only one playlist and some of the playlists in the training datasets are too short to describe the similarities between songs. Another problem is that since it takes too long to train the Implicit Feedback Factorization models, only 5% of the MDP data were used. To overcome these problems, we further build up Filtered-Data Model and Meta-Playlist Model by training the Implicit Feedback Factorization model on processed data.
 
 ## II. Filtered-Data Model
 
