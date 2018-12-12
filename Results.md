@@ -1,6 +1,7 @@
 ---
 title: Results
 notebook: Results.ipynb
+nav_include: 5
 ---
 
 ## Contents
@@ -43,52 +44,6 @@ Normalized Discoutned Cumulative Gain (NDCG) further measures the quality of ord
 Recommended Songs Clicks is a special metric targeted for Spotify. Spotify has a feature that generates ten songs in a round. The Recommended Songs Clicks is the minimal number of refreshes required to get the first relavent song. 
 <center>$$ \text{Clicks} = \left \lfloor \frac{argmin_i\{R_i:R_i \subset G\}-1}{10} \right \rfloor$$</center>
 When there are more songs in R than in G, we only consider the first $\mid G \mid$ songs in R. If none of the recommended songs is relavent, the value of the Recommended Songs Clicks would be $ \frac{|R|}{10}$, which is one more than the maximal number of rounds possible.
-
-
-
-```python
-def R_precision(rec, Y):
-    count = 0
-    for song in Y:
-        if song in rec[:len(Y)]:
-            count += 1 
-    return count/len(Y)
-
-def NDCG(rec, Y):
-    IDCG = 0
-    for i in range(0,len(Y)):
-        if i == 0: IDCG += 1
-        else: IDCG += 1/math.log((i+2),2)
-    DCG = 0
-    for i in range(0,len(rec)):
-        if i == 0 and rec[i] in Y: DCG += 1
-        elif i > 0 and rec[i] in Y: DCG += 1/math.log((i+2),2)     
-    return DCG/IDCG
-
-def clicks(rec, Y):
-    found_at = -1
-    find = 0
-    while found_at == -1 and find < len(Y):
-        if rec[find] in Y: found_at = find
-        else: find += 1
-    if found_at == -1:
-        return len(Y)//10
-    else:
-        return found_at//10
-
-def TEST_ALL(recs, Ys):
-    R_precision_scores = []
-    NDCG_scores = []
-    clicks_scores = []
-    for i in range(len(Ys)):
-        rec = recs[i]
-        Y = Ys[i]
-        R_precision_scores.append(R_precision(rec,Y))
-        NDCG_scores.append(NDCG(rec,Y))
-        clicks_scores.append(clicks(rec,Y))
-    return R_precision_scores,NDCG_scores, clicks_scores
-```
-
 
 
 
@@ -600,8 +555,6 @@ for file in val_Y_files:
     
 
 
-#### Summary
-
 
 
 ```python
@@ -688,3 +641,5 @@ for file in val_Y_files:
     NDCG: 0.061758758863905396
     #clicks: 6.3528
 
+
+#### Summary
