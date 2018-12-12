@@ -1,5 +1,5 @@
 ---
-title: Content-Based Models
+title: Content-based Models
 notebook: ContentBased.ipynb
 nav_include: 3
 ---
@@ -24,7 +24,7 @@ In the end, we have ~10,000 instances from the first source, and ~5,000 instance
 
 We used the following models for classification: support vector machine (SVM), random forest, Gaussian naive Bayes and logistic regression. We used 50% of our instances as the training set and the other half as the validation set. We tried each combination of input representation and model. The model is trained on the training set and evaluated by the validation set. Our pipeline can be summarized as follows.
 
-<img src="images/fig1.png">
+![png](ContentBased_files/pipeline.png)
 
 #### (1). Baseline Model for Emotion Recognition
 

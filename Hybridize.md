@@ -21,7 +21,33 @@ import matplotlib.pyplot as plt
 ```
 
 
-## I. Validation Set Selection
+## I. Baseline Model
+
+Aside from the collaborative filtering and content-based models, we want to introduce one additional simple model as our baseline model. We select and order the top 500 songs that appear in the most playlists in MPD. In our baseline model, we use these 500 songs to recommend to all users, no matter what the input songs are.
+
+Because we have cleaned and saved the song and playlist data from MPD into a csv file, we can find the 500 most popular songs fairly easily.
+
+
+
+```python
+song_df = pd.read_csv('song_df.csv')
+song_df = song_df[['track_uri','num_pid']]
+song_df = song_df.sort_values('num_pid', ascending=False)
+```
+
+
+
+
+```python
+top500 = list(song_df['track_uri'].values[:500])
+recs = [top500 for i in range(5000)]
+
+with open('val_Y_top500.json','w') as f:
+    data = json.dump(recs,f)
+```
+
+
+## II. Validation Set Selection
 
 Before moving on to building the hybrid model, we select a validation set of 5,000 playlists. We will divide each playlist in the validation set to an input part and an output part, and we will use them for training in the hybridization process as well as model selection at the end. We set several criteria in selecting this validation set.
 
@@ -215,13 +241,15 @@ with open("val_pid.json", "w") as f:
 ```
 
 
-## II. Model Hybridization: Stacking with Logistic Regression CV
+## III. Model Hybridization: 
 
-So far, we have constructed five models that we consider combining in our final hybrid model. They are: 1) Collaborative Filtering with filtered data, 2) meta-playlist Collaborative Filtering, 3) lyric-emotion clustering, 4) audio-genre clustering, and 5) audio feature clustering. Moreover, we have selected a validation set, splited into a list of 5,000 inputs and a list 5,000 outputs. For each input list, each model outputs 500 song recommendations, with corresponding scores used to order the recommendations.
+So far, we have constructed three sets of models that we consider combining in our final hybrid model: collaborative filtering models, content-based models, and a baseline model recommending the most popular songs. Moreover, we have selected a validation set, splited into a list of 5,000 inputs and a list 5,000 outputs. For each input list, each model outputs 500 song recommendations, with corresponding scores used to order the recommendations.
 
-Therefore, we can transform the model hybridization problem to a stacking problem. Regarding each recommended song track for each input list, we have multiple score values from the different models. We consider this set of values to be one observation. Moreover, we can assign the output of this observation to be one if this song track actually exists in the true validation output corresponding to this particular input, and we assign zero otherwise. Since the stacking problem outputs only take up values one or zero, we use Logistic Regression to achieve stacking. In order not to overfit to this validation set, we apply Cross Validation when we train our Logistic Regression model.
+### 1. Stacking with Logistic Regression CV
 
-If we want to combine all the five models, they will generate 2,500 songs in total. Although there will be some overlaps, the number of unique song recommendations is still much larger than the number of true outputs, which is 100. This would result in an unbalanced model, which classifies more songs as not recommended than it should. To combat this issue, when we train our Logistic Regression CV model, we keep all the observations whose output are 1, and randomly sample observations whose output are 0, so that the resulting stacking model is balanced.
+We can transform the model hybridization problem to a stacking problem. Regarding each recommended song track for each input list, we have multiple score values from the different models. We consider this set of values to be one observation. Moreover, we can assign the output of this observation to be one if this song track actually exists in the true validation output corresponding to this particular input, and we assign zero otherwise. Since the stacking problem outputs only take up values one or zero, we use Logistic Regression to achieve stacking. In order not to overfit to this validation set, we apply Cross Validation when we train our Logistic Regression model.
+
+If we want to combine all the five models, they will generate 2,500 songs in total. Although there will be some overlaps, the number of unique song recommendations is still much larger than the number of true outputs, which is 100. This would result in an unbalanced model, which classifies more songs as not recommended than it should. To combat this issue, when we train our Logistic Regression CV model, we keep all the observations whose output is 1, and randomly sample observations whose output is 0, so that the resulting stacking model is balanced.
 
 
 
@@ -298,6 +326,89 @@ def hybridize(files):
         final_s = list(np.array(s[-1:-501:-1])[:,0])
         rec.append(final_s)
     with open('hybridize.json', 'w') as f:
+        json.dump(rec, f)
+    return rec
+```
+
+
+After some trials, we find that Logistic Regression does not perform very well. Among the coefficients generated for each of the scores associated with the models, only the coefficient for the best performing model is positive, and all other are negative. However, ideally, when we combine the models, we do not want to have negative coefficient for any of the models. 
+
+### 2. Hybrid Model with Assigned Weight
+
+In the second approach, we try to manually assign weights to the models, compute the weighted average of the scores for each of the songs, and recommended the 500 songs with the highest scores. We use the top 500 popular songs as a foundation and combine it with other collaborative filtering and content-based models.
+
+We have also thought of altering the weights among different models based on the length of the input. However, after investigation, we did not find significant indication that a certain model performs better when the input length is longer. Thus, we keep the same weight in our hybrid model regardless of the size of the input playlist.
+
+
+
+```python
+import numpy as np
+import json
+
+with open('validation/val_Y.json', 'r') as f:
+    val_Y = json.load(f)
+
+output = []
+for lst in val_Y:
+    dic = {}
+    for i in lst:
+        dic[i] = 1
+    output.append(dic)
+
+
+def combine(files, w):
+    train_x = []
+    train_y = []
+    data_list = []
+    for file in files:
+        with open(file, 'r') as f:
+            data_list.append(json.load(f))
+
+
+    POP = []
+    for i in range(len(data_list[-1])):
+        dic = {}
+        for j in range(len(data_list[-1][i])):
+            dic[data_list[-1][i][j]] = (500 - j) * w
+        POP.append(dic)
+    data_list[-1] = POP
+
+    scores = [0] * len(data_list[0])
+
+    for i in range(len(data_list[0])):
+        ## combine tracks
+        dics = []
+        for data in data_list:
+            dics.append(data[i])
+        tracks=[]
+        for dic in dics:
+            tracks += list(dic.keys())
+
+        y_val = output[i]
+
+        scores[i] = {}
+        for track in tracks:
+            scores[i][track] = 0
+            for j in range(len(dics)):
+                if track in dics[j].keys():
+                    scores[i][track] = scores[i][track] + dics[j][track]
+                else:
+                    scores[i][track] = scores[i][track] + 0
+            try:
+                y_val[track]
+            except KeyError:
+                y = 0
+            else: 
+                y = 1
+
+    rec = []
+    for i in range(len(data_list[0])):
+        print('rec', i)
+        score = scores[i]
+        s = sorted(score.items(), key=lambda item:item[1])
+        final_s = list(np.array(s[-1:-501:-1])[:,0])
+        rec.append(final_s)	
+    with open('combine_2_07_weight.json.json','w') as f:
         json.dump(rec, f)
     return rec
 ```
