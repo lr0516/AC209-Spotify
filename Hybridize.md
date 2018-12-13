@@ -1,5 +1,5 @@
 ---
-title: Hybrid Models
+title: Hybrid Model
 notebook: Hybridize.ipynb
 nav_include: 4
 ---
@@ -335,16 +335,32 @@ After some trials, we find that Logistic Regression does not perform very well. 
 
 ### 2. Hybrid Model with Assigned Weight
 
-In the second approach, we try to manually assign weights to the models, compute the weighted average of the scores for each of the songs, and recommended the 500 songs with the highest scores. We use the top 500 popular songs as a foundation and combine it with other collaborative filtering and content-based models.
+In the second approach, we try to manually assign weights to the models, compute the weighted average of the scores for each of the songs, and recommended the 500 songs with the highest scores. Because collaborative filtering models and content-based models produce scores with different scales, we need to first normalize these scores. Next, we use the top 500 popular songs as a foundation and combine it with other collaborative filtering and content-based models. Specifically, we assign weight of 1 to collaborative filtering and content-based models, and alter the weight on the top 500 popular song model.
 
 We have also thought of altering the weights among different models based on the length of the input. However, after investigation, we did not find significant indication that a certain model performs better when the input length is longer. Thus, we keep the same weight in our hybrid model regardless of the size of the input playlist.
 
 
 
 ```python
-import numpy as np
-import json
+def rescore(file):
+    with open('validation/'+file+'.json') as f:
+        data = json.load(f)
+    rescored_recs = []
+    for pl in data:
+        songs = list(pl.keys())
+        rescored_rec = {songs[i]:1-i/500 for i in range(500)}
+        rescored_recs.append(rescored_rec)
+    with open('validation/'+file+'_rescored.json','w') as f_out:
+        data = json.dump(rescored_recs, f_out)
+        
+rescore('score_advanced_CF')
+rescore('score_metaplaylist')
+```
 
+
+
+
+```python
 with open('validation/val_Y.json', 'r') as f:
     val_Y = json.load(f)
 
@@ -369,13 +385,13 @@ def combine(files, w):
     for i in range(len(data_list[-1])):
         dic = {}
         for j in range(len(data_list[-1][i])):
-            dic[data_list[-1][i][j]] = (500 - j) * w
+            dic[data_list[-1][i][j]] = (500 - j) * w / 500
         POP.append(dic)
     data_list[-1] = POP
 
     scores = [0] * len(data_list[0])
 
-    for i in range(len(data_list[0])):
+    for i in range(len(data_list[0])):		
         ## combine tracks
         dics = []
         for data in data_list:
@@ -386,7 +402,7 @@ def combine(files, w):
 
         y_val = output[i]
 
-        scores[i] = {}
+    scores[i] = {}
         for track in tracks:
             scores[i][track] = 0
             for j in range(len(dics)):
@@ -408,8 +424,14 @@ def combine(files, w):
         s = sorted(score.items(), key=lambda item:item[1])
         final_s = list(np.array(s[-1:-501:-1])[:,0])
         rec.append(final_s)	
-    with open('combine_2_07_weight.json.json','w') as f:
+    with open('validation/combine_BL2CF_20.json','w') as f:
         json.dump(rec, f)
     return rec
+
+combine(['validation/score_advanced_CF_rescored.json',
+    'validation/score_metaplaylist_rescored.json', 
+    #'validation/val_Y_lyric_score_a.json',
+    #'validation/val_Y_audio_score_c.json',
+    'validation/val_Y_top500.json'], 20)
 ```
 

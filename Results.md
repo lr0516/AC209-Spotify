@@ -555,6 +555,8 @@ for file in val_Y_files:
     
 
 
+#### Summary (Logistic Regression)
+
 
 
 ```python
@@ -628,18 +630,122 @@ display(df_stack)
 
 ```python
 R_comb_list,N_comb_list,C_comb_list = [],[],[]
-val_Y_files = ['validation/weightedsum_2CFs.json']
+val_Y_files = ['validation/combine_all_6.json',
+              'validation/combine_all_10.json',
+              'validation/combine_all_20.json',
+              'validation/combine_BL2CF_4.json',
+              'validation/combine_BL2CF_6.json',
+              'validation/combine_BL2CF_10.json',
+              'validation/combine_BL2CF_20.json']
 for file in val_Y_files:
     R, N, C = test_recs(file)
+    print()
     R_comb_list.append(R)
     N_comb_list.append(N)
     C_comb_list.append(C)
 ```
 
 
-    R_precision: 0.018852
-    NDCG: 0.061758758863905396
-    #clicks: 6.3528
+    R_precision: 0.03576800000000001
+    NDCG: 0.08076354993251983
+    #clicks: 4.791
+    
+    R_precision: 0.035904000000000005
+    NDCG: 0.08239201537590553
+    #clicks: 4.8556
+    
+    R_precision: 0.036
+    NDCG: 0.08302751185815865
+    #clicks: 4.9238
+    
+    R_precision: 0.035618000000000004
+    NDCG: 0.08169420284008266
+    #clicks: 4.7388
+    
+    R_precision: 0.03574600000000001
+    NDCG: 0.08227936904116455
+    #clicks: 4.7954
+    
+    R_precision: 0.035886
+    NDCG: 0.08284576246083752
+    #clicks: 4.859
+    
+    R_precision: 0.035991999999999996
+    NDCG: 0.08301416957075745
+    #clicks: 4.9244
+    
 
 
-#### Summary
+#### Summary (Weighted Sums)
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>R-Precision</th>
+      <th>NDCG</th>
+      <th>Recommended Songs Clicks</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>All five models with weight(Top 500) = 6</th>
+      <td>0.035768</td>
+      <td>0.080764</td>
+      <td>4.7910</td>
+    </tr>
+    <tr>
+      <th>All five models with weight(Top 500) = 10</th>
+      <td>0.035904</td>
+      <td>0.082392</td>
+      <td>4.8556</td>
+    </tr>
+    <tr>
+      <th>All five models with weight(Top 500) = 20</th>
+      <td>0.036000</td>
+      <td>0.083028</td>
+      <td>4.9238</td>
+    </tr>
+    <tr>
+      <th>Top 500 &amp; CF models with weight(Top 500) = 4</th>
+      <td>0.035618</td>
+      <td>0.081694</td>
+      <td>4.7388</td>
+    </tr>
+    <tr>
+      <th>Top 500 &amp; CF models with weight(Top 500) = 6</th>
+      <td>0.035746</td>
+      <td>0.082279</td>
+      <td>4.7954</td>
+    </tr>
+    <tr>
+      <th>Top 500 &amp; CF models with weight(Top 500) = 10</th>
+      <td>0.035886</td>
+      <td>0.082846</td>
+      <td>4.8590</td>
+    </tr>
+    <tr>
+      <th>Top 500 &amp; CF models with weight(Top 500) = 20</th>
+      <td>0.035992</td>
+      <td>0.083014</td>
+      <td>4.9244</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
