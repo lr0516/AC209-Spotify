@@ -37,6 +37,8 @@ Logan, Kositsky & Moreno (2004)$^{[7]}$ show us that we can use latent semantic 
 
 Finally, we learn how to prepare our training dataset more appropriately from the work of Yang, Jeong, Choi & Lee (2018)$^{[8]}$. We would like to filter out songs that are not so popular, and therefore appear in only one or two playlists.
 
+### References
+
 [1] Koren, Yehuda, Robert Bell, and Chris Volinsky. "Matrix factorization techniques for recommender systems." Computer 42.8 (2009).
 
 [2] Berenzweig, Adam, Beth Logan, Daniel P.W. Ellis and Brian Whitman. A Large-Scale Evaluation of Acoustic and Subjective Music Similarity Measures. Proceedings of the ISMIR International Conference on Music Information Retrieval (Baltimore, MD), 2003, (pp. 99-105).
