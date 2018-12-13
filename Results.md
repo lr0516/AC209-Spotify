@@ -711,7 +711,7 @@ We get some unexpeced results for the models. And we will analyze the performanc
 
 ### 1. Collaborative Filtering Models
 
-Among all the 3 collaborative filtering models, the *Baseline* collaborative filtering model gives the best result, which means preprocessing the playlists or the tracks is useless when traing the collaborative filtering models. The *Meta-Playlist* model and the *Advanced* model do not give better results may be because that the real utility matrix is destructed after processing the original playlists.
+Among all the 3 collaborative filtering models, the *Baseline* collaborative filtering model gives the best result, which means preprocessing the playlists or the tracks is useless when traing the collaborative filtering models. The *Meta-Playlist* model and the *Advanced* model do not give better results may be because that the real utility matrix is destructed after processing the original playlists. To improve the performance of the collaborative filtering model, we may use more playlists to train the baseline collaborative filtering model.
 
 ### 2. Hybrid Models
 
