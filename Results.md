@@ -159,16 +159,6 @@ R_bl, N_bl, C_bl = test_recs('validation/val_Y_top500.json')
 #### Summary
 
 
-
-```python
-df_bl = pd.DataFrame([R_bl, N_bl, C_bl]).T
-df_bl.columns = ['R-Precision','NDCG','Recommended Songs Clicks']
-df_bl.index = ['Baseline - Top 500']
-display(df_bl)
-```
-
-
-
 <div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -265,16 +255,6 @@ C_cf_list.append(C)
 
 
 #### Summary
-
-
-
-```python
-df_cf = pd.DataFrame([R_cf_list,N_cf_list,C_cf_list]).T
-df_cf.columns = ['R-Precision','NDCG','Recommended Songs Clicks']
-df_cf.index = ['Baseline CF','Meta-Playlist CF','Advanced CF']
-display(df_cf)
-```
-
 
 
 <div>
@@ -438,17 +418,6 @@ C_cb_list.append(C)
 #### Summary
 
 
-
-```python
-df_cb = pd.DataFrame([R_cb_list,N_cb_list,C_cb_list]).T
-df_cb.columns = ['R-Precision','NDCG','Recommended Songs Clicks']
-df_cb.index = ['Clustering - Emotion','Clustering - Genre', 'Clustering - Audio Feature',
-              'No Clustering - Emotion','No Clustering - Genre', 'No Clustering - Audio Feature']
-display(df_cb)
-```
-
-
-
 <div>
 <style scoped>
     .dataframe tbody tr th:only-of-type {
@@ -556,19 +525,6 @@ for file in val_Y_files:
 
 
 #### Summary (Logistic Regression)
-
-
-
-```python
-df_stack = pd.DataFrame([R_stack_list,N_stack_list,C_stack_list]).T
-df_stack.columns = ['R-Precision','NDCG','Recommended Songs Clicks']
-df_stack.index = ['Top500 & CF-MetaPlaylist & CF-Advanced & CB-Emotion & CB-Audio',
-                 'CF-MetaPlaylist & CF-Advanced & CB-Emotion & CB-Audio',
-                 'CF-MetaPlaylist & CF-Advanced',
-                 'Top500 & CF-MetaPlaylist']
-display(df_stack)
-```
-
 
 
 <div>
