@@ -705,3 +705,16 @@ for file in val_Y_files:
 </table>
 </div>
 
+## III. Reflection
+
+We get some unexpeced results for the models. And we will analyze the performance of different models in this section and further propose how to improve the performance of  our music recommendation system.
+
+### 1. Collaborative Filtering Models
+
+Among all the 3 collaborative filtering models, the *Baseline* collaborative filtering model gives the best result, which means preprocessing the playlists or the tracks is useless when traing the collaborative filtering models. The *Meta-Playlist* model and the *Advanced* model do not give better results may be because that the real utility matrix is destructed after processing the original playlists.
+
+### 2. Hybrid Models
+
+When we do stacking with a logistic regression model on a set of different basic models, the final logistic regression model does not always give a better result than the basic models. After examining the coefficients of the Logistic Regression model, we find that when there is a gap between the precisions of the two basic models included in stacking, the coefficient of the basic model with worse performance is negative. It is intuitive as the model with worse performance is less likely to predict the right songs included in the real playlist. After realizing this problem with the stacking method, we try to combine the models by assigning different weights to rank scores given by different basic models.
+
+After combining the basic models with different weights, we do get better results than the basic models. And our final model gives a precision of 3.6% on the validation set. It is worth noting that our final model has a good performance on the metric 'clicks', which means that among all the 500 songs our final model gives for an incompleted playlist, the number of songs included in the real playlist is considerable.
