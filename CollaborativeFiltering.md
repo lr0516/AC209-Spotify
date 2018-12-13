@@ -38,9 +38,11 @@ import os
 data_path = os.getcwd()+'/millionplaylist/data/'
 playlist_fn = os.listdir(data_path)
 
+## Preparing data
+
 CF_list = []
 
-for fn_index in range(50): #range(len(playlist_fn)):
+for fn_index in range(50):
     with open(data_path+playlist_fn[fn_index]) as f:
         data = json.load(f)
 
@@ -65,6 +67,7 @@ from spotlight.interactions import Interactions
 from spotlight.evaluation import rmse_score
 from spotlight.factorization.implicit import ImplicitFactorizationModel
 
+## Load data
 
 with open('CF_lists_50000.json', 'r') as f:
     data = json.load(f)
@@ -72,6 +75,7 @@ with open('CF_lists_50000.json', 'r') as f:
 user = [int(u) for u, i in data]
 item = [i for u,i  in data]
 
+## Assign id to each playlist title
 
 count_u = {}
 for u in user:
@@ -90,6 +94,7 @@ user_processed = []
 for u in user:
     user_processed.append(user_id[u])
 
+## Assign id to each track id
 
 count = {}
 for i in item:
@@ -125,6 +130,7 @@ data = Interactions(np.array(user_processed), np.array(item_processed), rating)
 
 
 ```python
+## Train the model
 
 model = ImplicitFactorizationModel(n_iter = 1)
 model.fit(data, verbose = 1)
@@ -136,9 +142,12 @@ model = torch.load('baseline_model')
 
 
 ```python
+## Load the validation set
 
 with open('Val_X.json', 'r') as f:
     validation = json.load(f)
+
+## Recommend 500 tracks for every user in the validation set
 
 def top_500_dic(inp):
     dic = {}
@@ -172,6 +181,8 @@ for i in range(len(validation)):
         rec.append(popular_dic)
     print('Rec completed', i)
 
+## Export the results as a list of dictionaries
+
 with open('Recommend_songs_baseline_CFmodel.json', 'w') as f:
     json.dump(rec, f)
 ```
@@ -186,6 +197,7 @@ For Filtered-Data Model, we filter the MDP data by only maintaining songs which 
 
 
 ```python
+## Preparing Data
 
 song_df = pd.read_csv('song_df_orig.csv')
 
@@ -210,7 +222,7 @@ for uri in dict_filtered:
     for pid in pids:
         try: CF_filtered.append([int(pid),uri])
         except ValueError: pass
-        
+
 user = [u for u,i in CF_filtered]
 user_count = Counter(user)
 length_count = Counter(np.array(sorted(user_count.items()))[:,1])
@@ -258,6 +270,7 @@ from spotlight.interactions import Interactions
 from spotlight.evaluation import rmse_score
 from spotlight.factorization.implicit import ImplicitFactorizationModel
 
+## Load data
 
 with open('CF_lists_filtered.json', 'r') as f:
     data = json.load(f)
@@ -265,6 +278,7 @@ with open('CF_lists_filtered.json', 'r') as f:
 user = [int(u) for u, i in data]
 item = [i for u,i  in data]
 
+## Assign id to each playlist title
 
 count_u = {}
 for u in user:
@@ -283,6 +297,7 @@ user_processed = []
 for u in user:
     user_processed.append(user_id[u])
 
+## Assign id to track ids
 
 count = {}
 for i in item:
@@ -318,6 +333,7 @@ data = Interactions(np.array(user_processed), np.array(item_processed), rating)
 
 
 ```python
+## Train the model
 
 model = ImplicitFactorizationModel(n_iter = 1)
 model.fit(data, verbose = 1)
@@ -329,9 +345,12 @@ model = torch.load('advanced_model.dms')
 
 
 ```python
+## Load the validation set
 
 with open('Val_X.json', 'r') as f:
     validation = json.load(f)
+
+## Recommend 500 tracks for every user in the validation set
 
 def top_500_dic(inp):
     dic = {}
@@ -364,6 +383,8 @@ for i in range(len(validation)):
         rec.append(popular_dic)
     print('Rec completed', i)
 
+## Export the results as a list of dictionaries
+
 with open('Recommend_songs_advanced_CFmodel.json', 'w') as f:
     json.dump(rec, f)
 ```
@@ -394,9 +415,8 @@ training, the rest was used for validation. 10 epoches were run to give an idea 
 
 
 ```python
-"""
-Preparing data
-"""
+## Preparing data
+
 import re
 from collections import Counter
 
@@ -469,9 +489,8 @@ from enum import Enum
 
 
 ```python
-"""
-Load data
-"""
+## Load data
+
 import json
 with open('CF_matrix_condensed.json', 'r') as f:
     data = json.load(f)
@@ -485,9 +504,9 @@ rating = [r for u, i, r in data]
 
 
 ```python
-"""
-Assign id to each playlist title
-"""
+
+## Assign id to each playlist title
+
 User_id = Enum(value = 'User_id', names = list(set(user)))
 ```
 
@@ -495,9 +514,9 @@ User_id = Enum(value = 'User_id', names = list(set(user)))
 
 
 ```python
-"""
-Replace playlist titles with associated ids
-"""
+
+## Replace playlist titles with associated ids
+
 for i in range(len(user)):
     u = user[i]
     user[i] = User_id[u].value
@@ -507,9 +526,9 @@ for i in range(len(user)):
 
 
 ```python
-"""
-Assign id to each track
-"""
+
+## Assign id to each track
+
 a = list(set(item))
 
 item_id = {}
@@ -527,9 +546,9 @@ for i in range(len(item)):
 
 
 ```python
-"""
-Train the model
-"""
+
+## Train the model
+
 data = Interactions(user_ids=np.array(user), item_ids=np.array(item), ratings=np.array(rating))
 train, test = random_train_test_split(data)
 model_full = ImplicitFactorizationModel()
@@ -541,9 +560,9 @@ model_full.fit(train, verbose=1)
 
 
 ```python
-"""
-Save the model
-"""
+
+## Save the model
+
 import torch
 torch.save(model_full, 'meta_playlist_full')
 ```
@@ -552,9 +571,9 @@ torch.save(model_full, 'meta_playlist_full')
 
 
 ```python
-"""
-Load the validation set
-"""
+
+## Load the validation set
+
 with open('Val_X.json', 'r') as f:
     validation = json.load(f)
 ```
@@ -563,9 +582,9 @@ with open('Val_X.json', 'r') as f:
 
 
 ```python
-"""
-Recommend 500 tracks for every user in the validation set
-"""
+
+## Recommend 500 tracks for every user in the validation set
+
 reverse_item_id = {}
 for key, value in item_id.items():
     reverse_item_id[value] = key
@@ -605,9 +624,9 @@ for each_input in validation:
 
 
 ```python
-"""
-Export the results as a list of dictionaries
-"""
+
+## Export the results as a list of dictionaries
+
 with open('score_500_full.json', 'w') as outfile:
     json.dump(rec_playlist, outfile)
 ```
