@@ -19,7 +19,7 @@ In the early stage, we read a wide range of papers on recommendation systems, wh
 
 ### Related Work
 
-In recommendation systems, a very popular algorithm nowadays is collaborative filtering. Koren, Bell & Volinsky (2009) $^{[1]}$ introduce a very specfic collaborative filtering technique (matrix factorization technique) which has good performance in the Netflix Prize Competition. Berenzweig, Logan, Ellis & Whitman (2003)$^{[2]}$ propose to use acoustic similarities to recommend songs. Schedl, Zamani, Chen, Deldjoo & Elahi (2018)$^{[3]}$ have pointed out that to solve the cold start problem and playlist continuation problem in music recommendation system, context-based models can be taken into consideration.
+In recommendation systems, a very popular algorithm nowadays is collaborative filtering. Koren, Bell & Volinsky (2009) $^{[1]}$ introduce a very specfic collaborative filtering technique (matrix factorization technique) which has good performance in the Netflix Prize Competition. For music recommendation problems specifically, Berenzweig, Logan, Ellis & Whitman (2003)$^{[2]}$ propose to use acoustic similarities to recommend songs. Schedl, Zamani, Chen, Deldjoo & Elahi (2018)$^{[3]}$ have pointed out that to solve the cold start problem and playlist continuation problem in music recommendation system, context-based models can be taken into consideration.
 
 Inspired by the works mentioned above, we use collaborative filtering techniques and content-based filtering techniques in our final model. Here are some related works that guide us to design and implement our project. We would like to give special thanks to them.
 
