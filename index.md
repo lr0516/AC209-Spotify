@@ -33,9 +33,9 @@ We want to associate song lyrics with musical mood and theme. Namely, we want to
 
 And in Chapter 9 of the textbook by Leskovec, Rajaraman and Ullman (2014)$^{[6]}$, we learn to construct for each item a profile, which is a record or collection of records representing important characteristics of that item. Each profile can be viewed as a vector, whose entries are paired with a set of features. We also need to create vectors with the same components that describe the user’s preferences. Then we can just calculate the cosine distance between two sets to measure the similarity of two playlists.
 
-Logan, Kositsky & Moreno (2004)$^{7}$ show us that we can use latent semantic analysis to compare the similarities among lyrics. However, as the paper points out, "similarity based on lyrics was found to be better than random but inferior to acoustic similarity, at least for the ground truth used."
+Logan, Kositsky & Moreno (2004)$^{[7]}$ show us that we can use latent semantic analysis to compare the similarities among lyrics. However, as the paper points out, "similarity based on lyrics was found to be better than random but inferior to acoustic similarity, at least for the ground truth used."
 
-Finally, we learn how to prepare our training dataset more appropriately from the work of Yang, Jeong, Choi & Lee (2018)$^{8}$. We would like to filter out songs that are not so popular, and therefore appear in only one or two playlists.
+Finally, we learn how to prepare our training dataset more appropriately from the work of Yang, Jeong, Choi & Lee (2018)$^{[8]}$. We would like to filter out songs that are not so popular, and therefore appear in only one or two playlists.
 
 [1] Koren, Yehuda, Robert Bell, and Chris Volinsky. "Matrix factorization techniques for recommender systems." Computer 42.8 (2009).
 
